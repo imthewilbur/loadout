@@ -337,6 +337,7 @@
         <div class="timer-count" id="timerCount">05</div>
         <div class="timer-progress" id="timerProgress"></div>
         <div class="timer-controls">
+          <button class="btn btn-ghost" id="soundToggle" onclick="toggleSound()">🔊</button>
           <button class="btn btn-ghost" onclick="skipStep()">Skip →</button>
           <button class="btn btn-primary" id="pauseBtn" onclick="togglePause()">Pause</button>
         </div>
@@ -362,8 +363,24 @@ const EQUIP = {
     sandbag:   {name:'Sandbag', exercises:['Sandbag Carries','Sandbag Squats']},
     pullup:    {name:'Pull-up Bar', exercises:['Pull-Ups','Hanging Knee Raises']},
     vest:      {name:'Weighted Vest', exercises:['Vest Step-Ups','Vest Lunges']},
-    jug:       {name:'Water Jug / Cooler', exercises:['Jug Swings','Cooler Carries']},
+    jug:       {name:'Water Jug / Cooler', exercises:['Jug Swings','Jug Farmer Carry','Cooler Carries']},
     backpack:  {name:'Loaded Backpack', exercises:['Backpack Squats','Backpack Step-Ups']},
+    tire:      {name:'Tire', exercises:['Tire Flips','Tire Sledge Strikes','Tire Jump-Overs']},
+    hammer:    {name:'Hammer / Sledge', exercises:['Hammer Swings (Tire Strikes)','Overhead Hammer Carries']},
+    cinderblock:{name:'Cinder Block / Brick', exercises:['Block Carries','Block Step-Ups','Block Presses']},
+    bucket:    {name:'Bucket (filled)', exercises:['Bucket Carries','Bucket Squats']},
+    shovel:    {name:'Shovel', exercises:['Shovel Woodchoppers','Shovel Rows']},
+    wheelbarrow:{name:'Wheelbarrow', exercises:['Loaded Wheelbarrow Push','Wheelbarrow Carries']},
+    ladder:    {name:'Ladder', exercises:['Ladder Drills','Ladder Overhead Carry']},
+    rock:      {name:'Rocks / Stones', exercises:['Atlas Stone Lifts','Rock Carries']},
+    log:       {name:'Log', exercises:['Log Presses','Log Carries']},
+    tarp:      {name:'Tarp', exercises:['Tarp Drag','Weighted Tarp Pull']},
+    sleepingbag:{name:'Sleeping Bag (rolled)', exercises:['Sleeping Bag Carries','Sleeping Bag Squats']},
+    propane:   {name:'Propane Tank', exercises:['Propane Tank Carries','Propane Overhead Press']},
+    paddle:    {name:'Canoe/Kayak Paddle', exercises:['Paddle Woodchoppers','Paddle Twists']},
+    cooler:    {name:'Cooler', exercises:['Cooler Carries','Cooler Step-Ups']},
+    chair:     {name:'Camp Chair', exercises:['Chair Step-Ups','Chair Tricep Dips']},
+    firewood:  {name:'Firewood Bundle', exercises:['Firewood Carries','Firewood Squat Hold']},
   },
   kids: {
     rock:     {name:'Rocks', exercises:['Rock Curls','Rock Overhead Carry']},
@@ -375,7 +392,19 @@ const EQUIP = {
     pole:     {name:'Tent Pole', exercises:['Partner Pole Rows','Pole Overhead Reach']},
     backpack: {name:'Backpack', exercises:['Backpack Squats','Backpack Lunges']},
     cooler:   {name:'Cooler', exercises:['Cooler Push','Cooler Step-Ups']},
+    tire:     {name:'Tire', exercises:['Tire Jump-Ins','Tire Push','Tire Carry']},
+    hammer:   {name:'Hammer or Mallet', exercises:['Hammer Carry Walk','Hammer Overhead Hold']},
+    bucket:   {name:'Bucket', exercises:['Bucket Carry Relay','Bucket Squats']},
+    shovel:   {name:'Shovel', exercises:['Shovel Carry','Pretend Digging Squats']},
+    wheelbarrow:{name:'Wheelbarrow', exercises:['Wheelbarrow Push','Wheelbarrow Races']},
+    ball:     {name:'Ball', exercises:['Ball Toss & Squat','Ball Balance Carry']},
+    stick:    {name:'Stick', exercises:['Stick Carry Balance','Stick Overhead Hold']},
+    blanket:  {name:'Blanket or Towel', exercises:['Blanket Drag','Blanket Tug Relay']},
   }
+};
+const CUSTOM_TEMPLATES = {
+  group: [n=>`${n} Farmer Carry`, n=>`${n} Overhead Press`, n=>`${n} Squat Hold`, n=>`${n} Deadlift`, n=>`${n} Lunge Carry`],
+  kids:  [n=>`${n} Carry Relay`, n=>`${n} Balance Walk`, n=>`${n} Toss & Catch`, n=>`${n} Scavenger Carry`],
 };
 const SYNONYMS = {
   group: {
@@ -387,16 +416,41 @@ const SYNONYMS = {
     sandbag:['sandbag','sandbags','sand bag'],
     pullup:['pull-up bar','pull up bar','pullup bar','pull-up','pull up','pullup','pull-ups','pullups'],
     vest:['weighted vest','vest','vests'],
-    jug:['jug','jugs','water jug','jerry can','cooler','coolers'],
+    jug:['jug','jugs','water jug','gallon of water','gallon jug','milk jug','jerry can'],
     backpack:['backpack','backpacks','rucksack'],
+    tire:['tire','tires','tyre','tyres'],
+    hammer:['hammer','hammers','sledgehammer','sledge hammer','mallet'],
+    cinderblock:['cinder block','cinderblock','cinder blocks','brick','bricks','concrete block'],
+    bucket:['bucket','buckets','pail'],
+    shovel:['shovel','shovels','spade'],
+    wheelbarrow:['wheelbarrow','wheelbarrows'],
+    ladder:['ladder','ladders','step ladder'],
+    rock:['rock','rocks','stone','stones','boulder'],
+    log:['log','logs','tree stump','stump'],
+    tarp:['tarp','tarps','tarpaulin'],
+    sleepingbag:['sleeping bag','sleeping bags'],
+    propane:['propane tank','propane','gas canister'],
+    paddle:['paddle','paddles','canoe paddle','kayak paddle','oar'],
+    cooler:['cooler','coolers','ice chest'],
+    chair:['camp chair','chair','chairs','folding chair'],
+    firewood:['firewood','fire wood','wood bundle'],
   },
   kids: {
-    rock:['rock','rocks','stone','stones'], log:['log','logs','stick','sticks','branch','branches'],
+    rock:['rock','rocks','stone','stones'], log:['log','logs','branch','branches'],
     chair:['chair','chairs','camp chair'],
-    jug:['jug','jugs','water jug','jerry can'], hoop:['hula hoop','hula hoops','hoop','hoops'],
+    jug:['jug','jugs','water jug','jerry can','gallon of water','gallon jug','milk jug'],
+    hoop:['hula hoop','hula hoops','hoop','hoops'],
     frisbee:['frisbee','frisbees','disc','discs'], pole:['tent pole','tent poles','pole','poles'],
     backpack:['backpack','backpacks'],
     cooler:['cooler','coolers','ice chest'],
+    tire:['tire','tires','tyre','tyres'],
+    hammer:['hammer','hammers','mallet','toy hammer'],
+    bucket:['bucket','buckets','pail'],
+    shovel:['shovel','shovels','spade','sand shovel'],
+    wheelbarrow:['wheelbarrow','wheelbarrows'],
+    ball:['ball','balls'],
+    stick:['stick','sticks','twig','twigs'],
+    blanket:['blanket','blankets','towel','towels'],
   }
 };
 const BODYWEIGHT = {
@@ -420,6 +474,40 @@ let state = { code:null, mode:'group', items:[], workout:null };
 let homeMode = 'group';
 let liveStream = null;
 let seq = []; let seqIdx = 0; let secondsLeft = 0; let tickHandle = null; let paused = false;
+let audioCtx = null; let soundEnabled = true;
+
+function playTone(freq, duration, volume){
+  if(!soundEnabled || !audioCtx) return;
+  try{
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = volume || 0.25;
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration/1000);
+    osc.stop(audioCtx.currentTime + duration/1000);
+  }catch(e){ /* audio not available, ignore */ }
+}
+function playTransitionChime(){
+  playTone(660, 150, 0.28);
+  setTimeout(()=>playTone(880, 200, 0.28), 160);
+  if(navigator.vibrate) navigator.vibrate([120,60,120]);
+}
+function playCountdownTick(){
+  playTone(440, 80, 0.15);
+  if(navigator.vibrate) navigator.vibrate(40);
+}
+function playFinishChime(){
+  playTone(523,150,0.3); setTimeout(()=>playTone(659,150,0.3),160); setTimeout(()=>playTone(784,240,0.3),320);
+  if(navigator.vibrate) navigator.vibrate([150,80,150,80,250]);
+}
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundToggle');
+  if(btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+}
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -546,6 +634,9 @@ function matchesWord(text, word){
   const re = new RegExp('(^|[^a-z])' + escapeRegex(word) + '($|[^a-z])', 'i');
   return re.test(' ' + text + ' ');
 }
+function titleCase(s){
+  return s.trim().replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
+}
 function buildWorkout(mode, items){
   const db = EQUIP[mode];
   const syn = SYNONYMS[mode];
@@ -556,17 +647,21 @@ function buildWorkout(mode, items){
   }
   flat.sort((a,b) => b.word.length - a.word.length);
   const matched = new Set();
+  const unmatchedNames = [];
   items.forEach(it=>{
     let working = ' ' + it.item.toLowerCase() + ' ';
+    let hadMatch = false;
     for(const {type, word} of flat){
       const re = new RegExp('(^|[^a-z])(' + escapeRegex(word) + ')($|[^a-z])', 'i');
       const m = working.match(re);
       if(m){
         matched.add(type);
+        hadMatch = true;
         // consume the matched phrase so a shorter/overlapping synonym can't match the same text again
         working = working.replace(re, (full, b1, w, b2) => b1 + ' '.repeat(w.length) + b2);
       }
     }
+    if(!hadMatch && it.item.trim()) unmatchedNames.push(it.item.trim());
   });
   // guarantee every matched piece of equipment gets at least one exercise slot —
   // never drop equipment; only cap the *bonus* variety exercises
@@ -581,6 +676,18 @@ function buildWorkout(mode, items){
       bonus.push({ex: exs[i], equip: db[type].name});
       seen.add(exs[i]);
     }
+  });
+  // anything not in the library still gets its own real exercise, built from its actual name —
+  // never silently swapped for an unrelated bodyweight move
+  const templates = CUSTOM_TEMPLATES[mode];
+  const seenCustom = new Set();
+  unmatchedNames.forEach((raw, i)=>{
+    const key = raw.toLowerCase();
+    if(seenCustom.has(key)) return;
+    seenCustom.add(key);
+    const nice = titleCase(raw);
+    const template = templates[i % templates.length];
+    guaranteed.push({ex: template(nice), equip: nice});
   });
   let pool = [...guaranteed];
   const bwPool = BODYWEIGHT[mode];
@@ -725,6 +832,13 @@ function buildSequence(w){
   return out;
 }
 function startTimer(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+  } else if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
+  const soundBtn = document.getElementById('soundToggle');
+  if(soundBtn) soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
   const sel = document.getElementById('runnerSelect');
   const runner = sel ? sel.value : '';
   const supersets = state.workout.supersets;
@@ -760,9 +874,13 @@ function tick(){
   if(paused) return;
   secondsLeft--;
   if(secondsLeft < 0){
+    playTransitionChime();
     seqIdx++;
     loadStep();
     return;
+  }
+  if(secondsLeft >= 1 && secondsLeft <= 3){
+    playCountdownTick();
   }
   updateCountDisplay();
 }
@@ -787,6 +905,7 @@ function finishTimer(){
   document.getElementById('timerMove').textContent = 'Nice work, back to camp 🔥';
   document.getElementById('timerCount').textContent = '00';
   document.getElementById('timerProgress').textContent = '';
+  playFinishChime();
 }
 </script>
 </body>
