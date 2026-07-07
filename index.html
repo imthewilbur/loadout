@@ -205,6 +205,13 @@
   }
   .move-row:last-child{border-bottom:none;}
   .move-time{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#8a7f6a;}
+  .demo-link{
+    display:inline-flex; align-items:center; gap:3px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+    color:var(--ember-dark); text-decoration:none; white-space:nowrap;
+    border:1px solid var(--ember-dark); border-radius:4px; padding:1px 6px; margin-left:6px;
+  }
+  .demo-link:hover{background:var(--ember-dark); color:var(--white);}
   .superset-group{
     border-left:3px solid var(--moss); padding-left:10px; margin-bottom:10px; position:relative;
   }
@@ -342,6 +349,7 @@
       <div class="timer-wrap">
         <div class="timer-phase" id="timerPhase">WARM UP</div>
         <div class="timer-move" id="timerMove">Get Ready</div>
+        <a class="demo-link" id="timerDemoLink" href="#" target="_blank" rel="noopener" style="display:none; margin:0 0 14px;" onclick="onDemoLinkClick()">▶ Watch Demo</a>
         <div class="timer-count" id="timerCount">05</div>
         <div class="timer-progress" id="timerProgress"></div>
         <div class="timer-controls">
@@ -418,8 +426,19 @@ const EQUIP = {
   }
 };
 const CUSTOM_TEMPLATES = {
-  group: [n=>`${n} Farmer Carry`, n=>`${n} Overhead Press`, n=>`${n} Squat Hold`, n=>`${n} Deadlift`, n=>`${n} Lunge Carry`],
-  kids:  [n=>`${n} Carry Relay`, n=>`${n} Balance Walk`, n=>`${n} Toss & Catch`, n=>`${n} Scavenger Carry`],
+  group: [
+    {label:'Farmer Carry', build:n=>`${n} Farmer Carry`},
+    {label:'Overhead Press', build:n=>`${n} Overhead Press`},
+    {label:'Squat Hold', build:n=>`${n} Squat Hold`},
+    {label:'Deadlift', build:n=>`${n} Deadlift`},
+    {label:'Lunge Carry', build:n=>`${n} Lunge Carry`},
+  ],
+  kids: [
+    {label:'Carry Relay', build:n=>`${n} Carry Relay`},
+    {label:'Balance Walk', build:n=>`${n} Balance Walk`},
+    {label:'Toss and Catch', build:n=>`${n} Toss & Catch`},
+    {label:'Scavenger Carry', build:n=>`${n} Scavenger Carry`},
+  ],
 };
 const SYNONYMS = {
   group: {
@@ -667,6 +686,9 @@ function matchesWord(text, word){
 function titleCase(s){
   return s.trim().replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
 }
+function ytSearchUrl(term){
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(term + ' exercise tutorial');
+}
 function buildWorkout(mode, items, totalMin){
   const db = EQUIP[mode];
   const syn = SYNONYMS[mode];
@@ -700,10 +722,10 @@ function buildWorkout(mode, items, totalMin){
   const seen = new Set();
   matched.forEach(type=>{
     const exs = db[type].exercises;
-    guaranteed.push({ex: exs[0], equip: db[type].name});
+    guaranteed.push({ex: exs[0], equip: db[type].name, search: exs[0]});
     seen.add(exs[0]);
     for(let i=1;i<exs.length;i++){
-      bonus.push({ex: exs[i], equip: db[type].name});
+      bonus.push({ex: exs[i], equip: db[type].name, search: exs[i]});
       seen.add(exs[i]);
     }
   });
@@ -717,7 +739,9 @@ function buildWorkout(mode, items, totalMin){
     seenCustom.add(key);
     const nice = titleCase(raw);
     const template = templates[i % templates.length];
-    guaranteed.push({ex: template(nice), equip: nice});
+    // search uses the generic movement label (e.g. "Overhead Press"), not the odd item name,
+    // so the video search returns useful results instead of zero matches
+    guaranteed.push({ex: template.build(nice), equip: nice, search: template.label});
   });
   let pool = [...guaranteed];
   const bwPool = BODYWEIGHT[mode];
@@ -731,11 +755,11 @@ function buildWorkout(mode, items, totalMin){
     // nothing matched at all — full bodyweight workout
     const target = mode==='kids' ? 4 : 6;
     let i = 0;
-    while(pool.length < target && i < bwPool.length){ pool.push({ex:bwPool[i], equip:'Bodyweight'}); i++; }
+    while(pool.length < target && i < bwPool.length){ pool.push({ex:bwPool[i], equip:'Bodyweight', search:bwPool[i]}); i++; }
   } else if(pool.length % 2 !== 0){
     // odd one out — pair it with a single bodyweight move rather than leaving it solo
     const bw = bwPool.find(ex => !seen.has(ex));
-    if(bw){ pool.push({ex: bw, equip:'Bodyweight'}); seen.add(bw); }
+    if(bw){ pool.push({ex: bw, equip:'Bodyweight', search:bw}); seen.add(bw); }
   }
 
   const supersets = [];
@@ -794,10 +818,11 @@ function populateRunnerSelect(){
 }
 function renderTicket(w){
   const letters = ['A','B','C','D'];
+  const demoLink = (term) => `<a class="demo-link" href="${ytSearchUrl(term)}" target="_blank" rel="noopener">▶ Demo</a>`;
   let supersetsHtml = w.supersets.map((s, i)=>{
     const rows = s.map((mv,j)=>`
       <div class="move-row">
-        <span>${letters[j]}. ${escapeHtml(mv.ex)} <span class="move-time" style="opacity:.7;">(${escapeHtml(mv.equip)})</span></span>
+        <span>${letters[j]}. ${escapeHtml(mv.ex)} <span class="move-time" style="opacity:.7;">(${escapeHtml(mv.equip)})</span>${demoLink(mv.search || mv.ex)}</span>
         <span class="move-time">${w.work}s</span>
       </div>`).join('');
     return `
@@ -807,8 +832,8 @@ function renderTicket(w){
       </div>`;
   }).join('');
 
-  const warmupHtml = w.warmupList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}</span><span class="move-time">~1 min</span></div>`).join('');
-  const cooldownHtml = w.cooldownList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}</span><span class="move-time">~1 min</span></div>`).join('');
+  const warmupHtml = w.warmupList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}${demoLink(m)}</span><span class="move-time">~1 min</span></div>`).join('');
+  const cooldownHtml = w.cooldownList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}${demoLink(m)}</span><span class="move-time">~1 min</span></div>`).join('');
 
   const projMin = Math.floor(w.projectedSec / 60);
   const projSec = w.projectedSec % 60;
@@ -840,24 +865,24 @@ function renderTicket(w){
 function buildSequence(w){
   const out = [];
   const warmEach = Math.round((w.warmupMin*60) / w.warmupList.length);
-  w.warmupList.forEach(m => out.push({phase:'WARM UP', move:m, seconds:warmEach}));
+  w.warmupList.forEach(m => out.push({phase:'WARM UP', move:m, seconds:warmEach, search:m}));
   for(let r=0; r<w.rounds; r++){
     w.supersets.forEach((s, si)=>{
       s.forEach((mv, mi)=>{
-        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:mv.ex, seconds:w.work});
+        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:mv.ex, seconds:w.work, search: mv.search || mv.ex});
         const isLastMoveOfSuperset = mi === s.length-1;
         if(!isLastMoveOfSuperset){
-          out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest', seconds:w.restEx});
+          out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest', seconds:w.restEx, search:null});
         }
       });
       const isLastRoundAndSuperset = (r === w.rounds-1) && (si === w.supersets.length-1);
       if(!isLastRoundAndSuperset){
-        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest — next superset', seconds:w.restSet});
+        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest — next superset', seconds:w.restSet, search:null});
       }
     });
   }
   const coolEach = Math.round((w.cooldownMin*60) / w.cooldownList.length);
-  w.cooldownList.forEach(m => out.push({phase:'COOLDOWN', move:m, seconds:coolEach}));
+  w.cooldownList.forEach(m => out.push({phase:'COOLDOWN', move:m, seconds:coolEach, search:m}));
   return out;
 }
 function startTimer(){
@@ -896,8 +921,19 @@ function loadStep(){
   document.getElementById('timerRoundPill').textContent = state.code;
   updateCountDisplay();
   document.getElementById('timerProgress').textContent = `Step ${seqIdx+1} of ${seq.length}`;
+  const demoLink = document.getElementById('timerDemoLink');
+  if(step.search){
+    demoLink.href = ytSearchUrl(step.search);
+    demoLink.style.display = 'inline-flex';
+  } else {
+    demoLink.style.display = 'none';
+  }
   if(tickHandle) clearInterval(tickHandle);
   tickHandle = setInterval(tick, 1000);
+}
+function onDemoLinkClick(){
+  // auto-pause when someone stops to check the demo, so the clock doesn't run out on them
+  if(!paused) togglePause();
 }
 function tick(){
   if(paused) return;
