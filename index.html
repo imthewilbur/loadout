@@ -259,17 +259,25 @@
           <div class="mode-emoji">🏕️</div>
           <div>
             <div class="mode-name">Group Trip</div>
-            <div class="mode-desc">Everyone adds what they packed → 45 min workout</div>
+            <div class="mode-desc">Everyone adds what they packed</div>
           </div>
         </div>
         <div class="mode-card" data-mode="kids" onclick="selectHomeMode('kids')">
           <div class="mode-emoji">🧒</div>
           <div>
             <div class="mode-name">Kids Camp Hunt</div>
-            <div class="mode-desc">Send them to find stuff → 20 min workout</div>
+            <div class="mode-desc">Send them to find stuff around camp</div>
           </div>
         </div>
       </div>
+
+      <h2 class="section-title">Total workout time</h2>
+      <div class="card" style="display:flex; align-items:center; justify-content:center; gap:18px; padding:16px;">
+        <button class="btn btn-ghost" style="width:44px; padding:12px 0; font-size:18px;" onclick="adjustTime(-5)">&minus;</button>
+        <div style="font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; color:var(--forest); min-width:90px; text-align:center;" id="timeDisplay">45 min</div>
+        <button class="btn btn-ghost" style="width:44px; padding:12px 0; font-size:18px;" onclick="adjustTime(5)">&plus;</button>
+      </div>
+
       <button class="btn btn-primary" onclick="createSession()">Create Session</button>
 
       <div style="height:22px;"></div>
@@ -354,7 +362,10 @@ const EQUIP = {
   group: {
     band:      {name:'Resistance Band', exercises:['Banded Squats','Banded Rows','Band Pull-Aparts']},
     rope:      {name:'Jump Rope', exercises:['Jump Rope Intervals','High Knees w/ Rope']},
-    battlerope:{name:'Battle Rope', exercises:['Battle Rope Waves','Battle Rope Slams']},
+    battlerope:{name:'Battle Rope', exercises:['Battle Rope Alternating Waves','Battle Rope Slams','Battle Rope Jumping Jacks']},
+    bulgarianbag:{name:'Bulgarian Bag', exercises:['Bulgarian Bag Swings','Bulgarian Bag Shoulder Squats','Bulgarian Bag Rotational Lunge']},
+    cones:     {name:'Agility Cones', exercises:['Cone Shuttle Sprints (5-10-5)','Cone Weave Drill','Lateral Cone Shuffles']},
+    hurdles:   {name:'Agility Hurdles', exercises:['Hurdle Hops','Lateral Hurdle Runs','High-Knee Hurdle Drills']},
     kettlebell:{name:'Kettlebell', exercises:['Kettlebell Swings','Goblet Squats','KB Deadlifts']},
     dumbbell:  {name:'Dumbbells', exercises:['DB Thrusters','Renegade Rows','DB Reverse Lunges']},
     mat:       {name:'Yoga Mat', exercises:['Mountain Climbers','Plank Hold','Bicycle Crunches']},
@@ -371,7 +382,8 @@ const EQUIP = {
     bucket:    {name:'Bucket (filled)', exercises:['Bucket Carries','Bucket Squats']},
     shovel:    {name:'Shovel', exercises:['Shovel Woodchoppers','Shovel Rows']},
     wheelbarrow:{name:'Wheelbarrow', exercises:['Loaded Wheelbarrow Push','Wheelbarrow Carries']},
-    ladder:    {name:'Ladder', exercises:['Ladder Drills','Ladder Overhead Carry']},
+    ladder:    {name:'Step Ladder', exercises:['Ladder Carries','Ladder Overhead Hold']},
+    agilityladder: {name:'Agility Ladder', exercises:['Ladder Footwork Drills','Lateral Ladder Shuffles','High-Knee Ladder Run-Throughs']},
     rock:      {name:'Rocks / Stones', exercises:['Atlas Stone Lifts','Rock Carries']},
     log:       {name:'Log', exercises:['Log Presses','Log Carries']},
     tarp:      {name:'Tarp', exercises:['Tarp Drag','Weighted Tarp Pull']},
@@ -400,6 +412,9 @@ const EQUIP = {
     ball:     {name:'Ball', exercises:['Ball Toss & Squat','Ball Balance Carry']},
     stick:    {name:'Stick', exercises:['Stick Carry Balance','Stick Overhead Hold']},
     blanket:  {name:'Blanket or Towel', exercises:['Blanket Drag','Blanket Tug Relay']},
+    agilityladder: {name:'Agility Ladder', exercises:['Ladder Hopscotch','Ladder Bunny Hops','In-and-Out Ladder Steps']},
+    cones:    {name:'Agility Cones', exercises:['Cone Tag Sprints','Cone Weave Race','Cone Hopscotch']},
+    hurdles:  {name:'Agility Hurdles', exercises:['Hurdle Hops','Hurdle Crawl-Unders','Hurdle Jump Relay']},
   }
 };
 const CUSTOM_TEMPLATES = {
@@ -410,6 +425,9 @@ const SYNONYMS = {
   group: {
     band:['band','bands','resistance band'], rope:['jump rope','jump ropes','rope','ropes'],
     battlerope:['battle rope','battle ropes','battlerope'],
+    bulgarianbag:['bulgarian bag','bulgarian bags','training bag'],
+    cones:['agility cone','agility cones','cone','cones'],
+    hurdles:['agility hurdle','agility hurdles','hurdle','hurdles'],
     kettlebell:['kettlebell','kettlebells','kb'], dumbbell:['dumbbell','dumbbells','db'],
     mat:['mat','mats','yoga mat'], trx:['trx','suspension trainer','suspension'],
     medball:['medicine ball','medicine balls','med ball','med balls','slam ball','slam balls'],
@@ -424,7 +442,8 @@ const SYNONYMS = {
     bucket:['bucket','buckets','pail'],
     shovel:['shovel','shovels','spade'],
     wheelbarrow:['wheelbarrow','wheelbarrows'],
-    ladder:['ladder','ladders','step ladder'],
+    ladder:['step ladder','stepladder','ladder','ladders'],
+    agilityladder:['agility ladder','agility ladders','speed ladder','speed ladders'],
     rock:['rock','rocks','stone','stones','boulder'],
     log:['log','logs','tree stump','stump'],
     tarp:['tarp','tarps','tarpaulin'],
@@ -451,6 +470,9 @@ const SYNONYMS = {
     ball:['ball','balls'],
     stick:['stick','sticks','twig','twigs'],
     blanket:['blanket','blankets','towel','towels'],
+    agilityladder:['agility ladder','agility ladders','speed ladder','speed ladders'],
+    cones:['agility cone','agility cones','cone','cones'],
+    hurdles:['agility hurdle','agility hurdles','hurdle','hurdles'],
   }
 };
 const BODYWEIGHT = {
@@ -470,8 +492,14 @@ const COOLDOWN = {
 const DB_URL = 'https://basecamp-workout-default-rtdb.firebaseio.com';
 
 /* ---------------- State ---------------- */
-let state = { code:null, mode:'group', items:[], workout:null };
+let state = { code:null, mode:'group', totalMin:45, items:[], workout:null };
 let homeMode = 'group';
+let homeTime = 45;
+const TIME_MIN = 10, TIME_MAX = 90;
+function adjustTime(delta){
+  homeTime = Math.max(TIME_MIN, Math.min(TIME_MAX, homeTime + delta));
+  document.getElementById('timeDisplay').textContent = homeTime + ' min';
+}
 let liveStream = null;
 let seq = []; let seqIdx = 0; let secondsLeft = 0; let tickHandle = null; let paused = false;
 let audioCtx = null; let soundEnabled = true;
@@ -518,6 +546,8 @@ function show(id){
 function selectHomeMode(m){
   homeMode = m;
   document.querySelectorAll('.mode-card').forEach(c=>c.classList.toggle('active', c.dataset.mode===m));
+  homeTime = m==='kids' ? 20 : 45;
+  document.getElementById('timeDisplay').textContent = homeTime + ' min';
 }
 function randCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -526,7 +556,7 @@ function randCode(){
 }
 async function createSession(){
   const code = randCode();
-  state = { code, mode: homeMode, items: [], workout: null };
+  state = { code, mode: homeMode, totalMin: homeTime, items: [], workout: null };
   await saveSession();
   enterLobby();
   watchSession(code);
@@ -547,7 +577,7 @@ async function joinSession(){
 }
 function goHome(){
   stopWatching();
-  state = { code:null, mode:'group', items:[], workout:null };
+  state = { code:null, mode:'group', totalMin:45, items:[], workout:null };
   show('screen-home');
 }
 
@@ -592,7 +622,7 @@ function stopWatching(){
 }
 function enterLobby(){
   document.getElementById('lobbyCode').textContent = state.code;
-  document.getElementById('lobbyModePill').textContent = state.mode==='kids' ? 'KIDS · 20 MIN' : 'GROUP · 45 MIN';
+  document.getElementById('lobbyModePill').textContent = (state.mode==='kids' ? 'KIDS · ' : 'GROUP · ') + (state.totalMin || (state.mode==='kids'?20:45)) + ' MIN';
   document.getElementById('nameFieldLabel').textContent = state.mode==='kids' ? "Kid's name" : 'Your name';
   document.getElementById('itemFieldLabel').textContent = state.mode==='kids' ? 'What did you find?' : 'Equipment you brought';
   renderGearList();
@@ -637,7 +667,7 @@ function matchesWord(text, word){
 function titleCase(s){
   return s.trim().replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
 }
-function buildWorkout(mode, items){
+function buildWorkout(mode, items, totalMin){
   const db = EQUIP[mode];
   const syn = SYNONYMS[mode];
   // flatten to (type, phrase) pairs, longest/most-specific phrases checked first
@@ -715,16 +745,15 @@ function buildWorkout(mode, items){
   const work = mode==='kids' ? 30 : 40;
   const restEx = 15;
   const restSet = mode==='kids' ? 45 : 60;
-  const totalMin = mode==='kids' ? 20 : 45;
-  const warmupMin = 5;
-  const cooldownMin = mode==='kids' ? 3 : 5;
+  const warmupMin = Math.max(2, Math.min(6, Math.round(totalMin * 0.12)));
+  const cooldownMin = Math.max(2, Math.min(5, Math.round(totalMin * 0.08)));
   const mainSec = (totalMin - warmupMin - cooldownMin) * 60;
   let roundSec = 0;
   supersets.forEach(s => { roundSec += s.length * (work + restEx); });
   roundSec += supersets.length * restSet;
   let rounds = Math.floor(mainSec / Math.max(roundSec,1));
   const minRounds = pool.length <= 4 ? 2 : 1;
-  rounds = Math.max(minRounds, Math.min(6, rounds || minRounds));
+  rounds = Math.max(minRounds, Math.min(12, rounds || minRounds));
   const projectedSec = (warmupMin*60) + (roundSec * rounds) + (cooldownMin*60);
 
   return {
@@ -736,12 +765,12 @@ async function generateWorkout(){
   if(!state.items.length){
     if(!confirm('No gear added yet — build a bodyweight-only workout instead?')) return;
   }
-  const w = buildWorkout(state.mode, state.items);
+  const w = buildWorkout(state.mode, state.items, state.totalMin || (state.mode==='kids' ? 20 : 45));
   state.workout = w;
   await saveSession();
   renderTicket(w);
   populateRunnerSelect();
-  document.getElementById('workoutModePill').textContent = state.mode==='kids' ? 'KIDS · 20 MIN' : 'GROUP · 45 MIN';
+  document.getElementById('workoutModePill').textContent = (state.mode==='kids' ? 'KIDS · ' : 'GROUP · ') + w.totalMin + ' MIN';
   show('screen-workout');
 }
 function backToLobby(){
