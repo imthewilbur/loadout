@@ -316,6 +316,11 @@
         <span class="pill" id="workoutModePill">GROUP</span>
       </div>
       <div class="ticket" id="ticketContainer"></div>
+      <div class="card" id="runnerCard">
+        <label class="field-label">Who's starting this workout?</label>
+        <select id="runnerSelect" style="width:100%;padding:12px 13px;border:1.5px solid var(--rope);border-radius:8px;font-size:15px;font-family:'Inter',sans-serif;background:var(--white);color:var(--charcoal);"></select>
+        <p class="code-hint" style="margin-top:8px; text-align:left;">Each person starts at a different point in the circuit so nobody's waiting on the same piece of equipment.</p>
+      </div>
       <button class="btn btn-primary" onclick="startTimer()">Start Workout</button>
       <button class="btn btn-ghost" style="margin-top:10px;" onclick="generateWorkout()">Reshuffle Workout</button>
     </div>
@@ -563,16 +568,27 @@ function buildWorkout(mode, items){
       }
     }
   });
-  let pool = [];
+  // guarantee every matched piece of equipment gets at least one exercise slot —
+  // never drop equipment; only cap the *bonus* variety exercises
+  let guaranteed = [];
+  let bonus = [];
   const seen = new Set();
   matched.forEach(type=>{
-    db[type].exercises.forEach(ex=>{
-      if(!seen.has(ex)){ pool.push({ex, equip: db[type].name}); seen.add(ex); }
-    });
+    const exs = db[type].exercises;
+    guaranteed.push({ex: exs[0], equip: db[type].name});
+    seen.add(exs[0]);
+    for(let i=1;i<exs.length;i++){
+      bonus.push({ex: exs[i], equip: db[type].name});
+      seen.add(exs[i]);
+    }
   });
+  let pool = [...guaranteed];
   const bwPool = BODYWEIGHT[mode];
-  const maxPool = mode==='kids' ? 6 : 8;
-  if(pool.length > maxPool) pool = pool.slice(0, maxPool);
+  const maxPool = mode==='kids' ? 8 : 10;
+  for(const b of bonus){
+    if(pool.length >= maxPool) break;
+    pool.push(b);
+  }
 
   if(pool.length === 0){
     // nothing matched at all — full bodyweight workout
@@ -600,7 +616,8 @@ function buildWorkout(mode, items){
   supersets.forEach(s => { roundSec += s.length * (work + restEx); });
   roundSec += supersets.length * restSet;
   let rounds = Math.floor(mainSec / Math.max(roundSec,1));
-  rounds = Math.max(2, Math.min(6, rounds || 2));
+  const minRounds = pool.length <= 4 ? 2 : 1;
+  rounds = Math.max(minRounds, Math.min(6, rounds || minRounds));
   const projectedSec = (warmupMin*60) + (roundSec * rounds) + (cooldownMin*60);
 
   return {
@@ -616,11 +633,28 @@ async function generateWorkout(){
   state.workout = w;
   await saveSession();
   renderTicket(w);
+  populateRunnerSelect();
   document.getElementById('workoutModePill').textContent = state.mode==='kids' ? 'KIDS · 20 MIN' : 'GROUP · 45 MIN';
   show('screen-workout');
 }
 function backToLobby(){
   enterLobby();
+}
+function getUniqueContributors(){
+  const names = [];
+  const seenNames = new Set();
+  state.items.forEach(it=>{
+    const key = it.by.trim().toLowerCase();
+    if(!seenNames.has(key)){ seenNames.add(key); names.push(it.by.trim()); }
+  });
+  return names.sort((a,b)=>a.localeCompare(b));
+}
+function populateRunnerSelect(){
+  const sel = document.getElementById('runnerSelect');
+  const names = getUniqueContributors();
+  sel.innerHTML = names.length
+    ? names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+    : `<option value="">Just me</option>`;
 }
 function renderTicket(w){
   const letters = ['A','B','C','D'];
@@ -691,7 +725,19 @@ function buildSequence(w){
   return out;
 }
 function startTimer(){
-  seq = buildSequence(state.workout);
+  const sel = document.getElementById('runnerSelect');
+  const runner = sel ? sel.value : '';
+  const supersets = state.workout.supersets;
+  const numSupersets = supersets.length;
+  let offset = 0;
+  if(numSupersets > 1){
+    const names = getUniqueContributors();
+    const idx = names.indexOf(runner);
+    offset = idx >= 0 ? (idx % numSupersets) : Math.floor(Math.random()*numSupersets);
+  }
+  const rotatedSupersets = supersets.slice(offset).concat(supersets.slice(0, offset));
+  const rotatedWorkout = Object.assign({}, state.workout, { supersets: rotatedSupersets });
+  seq = buildSequence(rotatedWorkout);
   seqIdx = 0;
   paused = false;
   document.getElementById('pauseBtn').textContent = 'Pause';
