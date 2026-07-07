@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basecamp — Trailhead Fitness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest: #1B2E1F;
+    --forest-2: #24391F;
+    --canvas: #F4EDE0;
+    --canvas-2: #EAE0CB;
+    --ember: #E8622C;
+    --ember-dark: #C64E1E;
+    --moss: #4A6741;
+    --charcoal: #2B2622;
+    --rope: #C9A876;
+    --white: #FFFCF6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--canvas);
+    color: var(--charcoal);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  .header{
+    background: linear-gradient(160deg,var(--forest) 0%,var(--forest-2) 100%);
+    color: var(--canvas);
+    padding: 22px 20px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .header::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(rgba(244,237,224,0.05) 1px, transparent 1px);
+    background-size: 14px 14px;
+    pointer-events:none;
+  }
+  .wordmark{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin:0;
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .wordmark span{color:var(--ember);}
+  .tagline{
+    margin:4px 0 0;
+    font-size:12.5px;
+    letter-spacing:0.5px;
+    color: var(--rope);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .content{flex:1;padding:20px 18px 90px;}
+  h2.section-title{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    font-size:15px;
+    color:var(--forest);
+    margin:0 0 12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  h2.section-title::before{
+    content:"";
+    width:18px;height:2px;background:var(--ember);display:inline-block;
+  }
+  .card{
+    background:var(--white);
+    border:1.5px solid var(--rope);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .btn{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:14px;
+    font-weight:600;
+    border:none;
+    border-radius:8px;
+    padding:13px 18px;
+    cursor:pointer;
+    width:100%;
+    transition:transform .08s ease, filter .15s ease;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--ember); color:var(--white);}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-secondary{background:transparent; color:var(--forest); border:1.5px solid var(--forest);}
+  .btn-ghost{background:var(--canvas-2); color:var(--charcoal);}
+  .btn-row{display:flex; gap:10px;}
+  .btn-row .btn{flex:1;}
+  .mode-pick{display:flex; flex-direction:column; gap:12px; margin-bottom:18px;}
+  .mode-card{
+    border:2px solid var(--rope);
+    border-radius:10px;
+    padding:14px 16px;
+    display:flex; align-items:center; gap:12px;
+    cursor:pointer;
+    background:var(--white);
+  }
+  .mode-card.active{border-color:var(--ember); background:#FFF4EE;}
+  .mode-emoji{font-size:26px;}
+  .mode-name{font-family:'Oswald',sans-serif; font-weight:600; font-size:16px; text-transform:uppercase; letter-spacing:0.5px;}
+  .mode-desc{font-size:12.5px; color:#6b6355; margin-top:2px;}
+  input[type=text]{
+    width:100%;
+    padding:12px 13px;
+    border:1.5px solid var(--rope);
+    border-radius:8px;
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    background:var(--white);
+    color:var(--charcoal);
+  }
+  input[type=text]:focus{outline:2px solid var(--ember); outline-offset:1px;}
+  label.field-label{
+    display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:1px;
+    color:#8a7f6a; margin-bottom:5px; font-weight:600;
+  }
+  .field{margin-bottom:12px;}
+  .code-display{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:30px;
+    letter-spacing:6px;
+    color:var(--ember);
+    text-align:center;
+    background:var(--forest);
+    border-radius:8px;
+    padding:14px;
+    margin-bottom:6px;
+  }
+  .code-hint{text-align:center; font-size:12px; color:#8a7f6a; margin-bottom:16px;}
+  .gear-list{display:flex; flex-direction:column; gap:8px; margin:14px 0;}
+  .gear-tag{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--canvas-2);
+    border-left:4px solid var(--moss);
+    border-radius:6px;
+    padding:9px 12px;
+    font-size:14px;
+  }
+  .gear-tag .by{font-size:11.5px; color:#8a7f6a; font-family:'JetBrains Mono',monospace;}
+  .empty-state{
+    text-align:center; padding:22px 10px; color:#8a7f6a; font-size:13.5px;
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .top-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .back-link{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--forest);
+    text-decoration:none; cursor:pointer; background:none; border:none; padding:0;
+  }
+  .pill{
+    font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--moss); color:var(--white);
+    padding:3px 9px; border-radius:20px; letter-spacing:0.5px;
+  }
+  /* Trail ticket */
+  .ticket{
+    background:var(--white);
+    border:2px solid var(--charcoal);
+    border-radius:6px;
+    position:relative;
+    padding:22px 18px 24px;
+    margin-bottom:18px;
+  }
+  .ticket::before{
+    content:"TRAILHEAD APPROVED";
+    position:absolute; top:14px; right:-32px;
+    background:var(--ember); color:var(--white);
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:1px; padding:3px 38px;
+    transform:rotate(30deg);
+    box-shadow:0 1px 3px rgba(0,0,0,0.25);
+  }
+  .ticket-head{
+    text-align:center; border-bottom:2px dashed var(--rope); padding-bottom:14px; margin-bottom:14px;
+  }
+  .ticket-title{
+    font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; text-transform:uppercase;
+    letter-spacing:2px; color:var(--forest); margin:0;
+  }
+  .ticket-meta{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:#8a7f6a; margin-top:6px;
+  }
+  .ticket-block{margin-bottom:16px;}
+  .ticket-block h4{
+    font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:13px; letter-spacing:1px;
+    color:var(--ember-dark); margin:0 0 8px; display:flex; align-items:center; gap:6px;
+  }
+  .move-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0; font-size:14px; border-bottom:1px solid var(--canvas-2);
+  }
+  .move-row:last-child{border-bottom:none;}
+  .move-time{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#8a7f6a;}
+  .superset-group{
+    border-left:3px solid var(--moss); padding-left:10px; margin-bottom:10px; position:relative;
+  }
+  .superset-label{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--moss); font-weight:700;
+    letter-spacing:0.5px; margin-bottom:2px;
+  }
+  .rounds-note{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--forest); margin-top:6px;
+    background:var(--canvas-2); display:inline-block; padding:4px 9px; border-radius:5px;
+  }
+  /* Timer screen */
+  .timer-wrap{text-align:center; padding:30px 10px;}
+  .timer-phase{
+    font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:1.5px; font-size:14px;
+    color:var(--rope); margin-bottom:4px;
+  }
+  .timer-move{
+    font-family:'Oswald',sans-serif; font-size:26px; font-weight:600; color:var(--forest); margin-bottom:18px;
+    min-height:34px;
+  }
+  .timer-count{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:74px;
+    color:var(--ember); line-height:1; margin-bottom:22px;
+  }
+  .timer-progress{font-size:12.5px; color:#8a7f6a; font-family:'JetBrains Mono',monospace; margin-bottom:20px;}
+  .timer-controls{display:flex; gap:10px; justify-content:center;}
+  .timer-controls .btn{width:auto; padding:12px 22px;}
+  footer.hint{
+    text-align:center; font-size:11.5px; color:#8a7f6a; padding:14px; font-family:'JetBrains Mono',monospace;
+  }
+  @media (max-width:400px){
+    .timer-count{font-size:58px;}
+    .code-display{font-size:24px; letter-spacing:4px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <p class="wordmark">BASE<span>CAMP</span></p>
+    <p class="tagline">// trailhead fitness — gear up, work out, get back to camp</p>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME SCREEN -->
+    <div class="screen active" id="screen-home">
+      <h2 class="section-title">Start a session</h2>
+      <div class="mode-pick">
+        <div class="mode-card active" data-mode="group" onclick="selectHomeMode('group')">
+          <div class="mode-emoji">🏕️</div>
+          <div>
+            <div class="mode-name">Group Trip</div>
+            <div class="mode-desc">Everyone adds what they packed → 45 min workout</div>
+          </div>
+        </div>
+        <div class="mode-card" data-mode="kids" onclick="selectHomeMode('kids')">
+          <div class="mode-emoji">🧒</div>
+          <div>
+            <div class="mode-name">Kids Camp Hunt</div>
+            <div class="mode-desc">Send them to find stuff → 20 min workout</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="createSession()">Create Session</button>
+
+      <div style="height:22px;"></div>
+      <h2 class="section-title">Join a session</h2>
+      <div class="card">
+        <div class="field">
+          <label class="field-label">Session code</label>
+          <input type="text" id="joinCodeInput" maxlength="4" placeholder="e.g. TR4K" style="text-transform:uppercase;">
+        </div>
+        <button class="btn btn-secondary" onclick="joinSession()">Join</button>
+      </div>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <div class="screen" id="screen-lobby">
+      <div class="top-nav">
+        <button class="back-link" onclick="goHome()">&larr; Leave session</button>
+        <span class="pill" id="lobbyModePill">GROUP</span>
+      </div>
+      <div class="code-display" id="lobbyCode">----</div>
+      <p class="code-hint">Text this code to your crew, or share this page's link directly</p>
+
+      <div class="card">
+        <label class="field-label" id="nameFieldLabel">Your name</label>
+        <input type="text" id="contributorName" placeholder="e.g. Chris" style="margin-bottom:10px;">
+        <label class="field-label" id="itemFieldLabel">Equipment you brought</label>
+        <input type="text" id="itemInput" placeholder="e.g. kettlebell">
+        <div style="height:10px;"></div>
+        <button class="btn btn-primary" onclick="addItem()">Add Gear</button>
+      </div>
+
+      <h2 class="section-title">Gear list <span id="gearCount" style="color:#8a7f6a;font-family:'JetBrains Mono',monospace;font-size:12px;"></span></h2>
+      <div class="gear-list" id="gearList"></div>
+
+      <div style="height:8px;"></div>
+      <button class="btn btn-primary" onclick="generateWorkout()">Build the Workout</button>
+      <p class="code-hint" style="margin-top:8px;" id="syncStatus">🟢 Live — updates from your crew appear automatically</p>
+    </div>
+
+    <!-- WORKOUT SCREEN -->
+    <div class="screen" id="screen-workout">
+      <div class="top-nav">
+        <button class="back-link" onclick="backToLobby()">&larr; Back to gear list</button>
+        <span class="pill" id="workoutModePill">GROUP</span>
+      </div>
+      <div class="ticket" id="ticketContainer"></div>
+      <button class="btn btn-primary" onclick="startTimer()">Start Workout</button>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="generateWorkout()">Reshuffle Workout</button>
+    </div>
+
+    <!-- TIMER SCREEN -->
+    <div class="screen" id="screen-timer">
+      <div class="top-nav">
+        <button class="back-link" onclick="stopTimer()">&larr; Exit workout</button>
+        <span class="pill" id="timerRoundPill"></span>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-phase" id="timerPhase">WARM UP</div>
+        <div class="timer-move" id="timerMove">Get Ready</div>
+        <div class="timer-count" id="timerCount">05</div>
+        <div class="timer-progress" id="timerProgress"></div>
+        <div class="timer-controls">
+          <button class="btn btn-ghost" onclick="skipStep()">Skip →</button>
+          <button class="btn btn-primary" id="pauseBtn" onclick="togglePause()">Pause</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer class="hint">Gear list syncs live with anyone who has this session's code.</footer>
+</div>
+
+<script>
+/* ---------------- Equipment databases ---------------- */
+const EQUIP = {
+  group: {
+    band:      {name:'Resistance Band', exercises:['Banded Squats','Banded Rows','Band Pull-Aparts']},
+    rope:      {name:'Jump Rope', exercises:['Jump Rope Intervals','High Knees w/ Rope']},
+    battlerope:{name:'Battle Rope', exercises:['Battle Rope Waves','Battle Rope Slams']},
+    kettlebell:{name:'Kettlebell', exercises:['Kettlebell Swings','Goblet Squats','KB Deadlifts']},
+    dumbbell:  {name:'Dumbbells', exercises:['DB Thrusters','Renegade Rows','DB Reverse Lunges']},
+    mat:       {name:'Yoga Mat', exercises:['Mountain Climbers','Plank Hold','Bicycle Crunches']},
+    trx:       {name:'Suspension Trainer', exercises:['TRX Rows','TRX Pistol Squats']},
+    medball:   {name:'Medicine Ball', exercises:['Med Ball Slams','Russian Twists']},
+    sandbag:   {name:'Sandbag', exercises:['Sandbag Carries','Sandbag Squats']},
+    pullup:    {name:'Pull-up Bar', exercises:['Pull-Ups','Hanging Knee Raises']},
+    vest:      {name:'Weighted Vest', exercises:['Vest Step-Ups','Vest Lunges']},
+    jug:       {name:'Water Jug / Cooler', exercises:['Jug Swings','Cooler Carries']},
+    backpack:  {name:'Loaded Backpack', exercises:['Backpack Squats','Backpack Step-Ups']},
+  },
+  kids: {
+    rock:     {name:'Rocks', exercises:['Rock Curls','Rock Overhead Carry']},
+    log:      {name:'Log or Stick', exercises:['Log Lifts','Log Carry Relay']},
+    chair:    {name:'Camp Chair', exercises:['Chair Step-Ups','Chair Dips']},
+    jug:      {name:'Water Jug', exercises:['Jug Swings','Jug Carry']},
+    hoop:     {name:'Hula Hoop', exercises:['Hoop Hops','Hoop Spin Challenge']},
+    frisbee:  {name:'Frisbee', exercises:['Frisbee Fetch Sprint','Frisbee Balance Hold']},
+    pole:     {name:'Tent Pole', exercises:['Partner Pole Rows','Pole Overhead Reach']},
+    backpack: {name:'Backpack', exercises:['Backpack Squats','Backpack Lunges']},
+    cooler:   {name:'Cooler', exercises:['Cooler Push','Cooler Step-Ups']},
+  }
+};
+const SYNONYMS = {
+  group: {
+    band:['band','bands','resistance band'], rope:['jump rope','jump ropes','rope','ropes'],
+    battlerope:['battle rope','battle ropes','battlerope'],
+    kettlebell:['kettlebell','kettlebells','kb'], dumbbell:['dumbbell','dumbbells','db'],
+    mat:['mat','mats','yoga mat'], trx:['trx','suspension trainer','suspension'],
+    medball:['medicine ball','medicine balls','med ball','med balls','slam ball','slam balls'],
+    sandbag:['sandbag','sandbags','sand bag'],
+    pullup:['pull-up bar','pull up bar','pullup bar','pull-up','pull up','pullup','pull-ups','pullups'],
+    vest:['weighted vest','vest','vests'],
+    jug:['jug','jugs','water jug','jerry can','cooler','coolers'],
+    backpack:['backpack','backpacks','rucksack'],
+  },
+  kids: {
+    rock:['rock','rocks','stone','stones'], log:['log','logs','stick','sticks','branch','branches'],
+    chair:['chair','chairs','camp chair'],
+    jug:['jug','jugs','water jug','jerry can'], hoop:['hula hoop','hula hoops','hoop','hoops'],
+    frisbee:['frisbee','frisbees','disc','discs'], pole:['tent pole','tent poles','pole','poles'],
+    backpack:['backpack','backpacks'],
+    cooler:['cooler','coolers','ice chest'],
+  }
+};
+const BODYWEIGHT = {
+  group: ['Burpees','Jumping Jacks','Push-Ups','Bodyweight Squats','Walking Lunges','Plank Hold'],
+  kids: ['Bear Crawls','Animal Walk Relay','Jumping Jacks','Frog Jumps','Crab Walk'],
+};
+const WARMUP = {
+  group: ['Arm Circles','Bodyweight Squats','High Knees','Torso Twists'],
+  kids:  ['Arm Circles','Silly Walks','Jumping Jacks'],
+};
+const COOLDOWN = {
+  group: ['Standing Quad Stretch','Forward Fold','Shoulder Stretch','Deep Breathing'],
+  kids:  ['Stretch Like a Cat','Reach for the Sky','Deep Breaths'],
+};
+
+/* ---------------- Firebase (Realtime Database, REST + streaming) ---------------- */
+const DB_URL = 'https://basecamp-workout-default-rtdb.firebaseio.com';
+
+/* ---------------- State ---------------- */
+let state = { code:null, mode:'group', items:[], workout:null };
+let homeMode = 'group';
+let liveStream = null;
+let seq = []; let seqIdx = 0; let secondsLeft = 0; let tickHandle = null; let paused = false;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ---------------- Home ---------------- */
+function selectHomeMode(m){
+  homeMode = m;
+  document.querySelectorAll('.mode-card').forEach(c=>c.classList.toggle('active', c.dataset.mode===m));
+}
+function randCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c=''; for(let i=0;i<4;i++) c+=chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+async function createSession(){
+  const code = randCode();
+  state = { code, mode: homeMode, items: [], workout: null };
+  await saveSession();
+  enterLobby();
+  watchSession(code);
+}
+async function joinSession(){
+  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  if(code.length < 3){ alert('Enter the session code your group shared with you.'); return; }
+  try{
+    const res = await fetch(`${DB_URL}/sessions/${encodeURIComponent(code)}.json`);
+    const data = await res.json();
+    if(!data){ alert('No session found with that code.'); return; }
+    state = data;
+    enterLobby();
+    watchSession(code);
+  }catch(e){
+    alert('Could not reach the shared gear list — check your internet connection and try again.');
+  }
+}
+function goHome(){
+  stopWatching();
+  state = { code:null, mode:'group', items:[], workout:null };
+  show('screen-home');
+}
+
+/* ---------------- Lobby ---------------- */
+async function saveSession(){
+  try{
+    await fetch(`${DB_URL}/sessions/${encodeURIComponent(state.code)}.json`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+  }catch(e){
+    console.error('Firebase save error', e);
+    const statusEl = document.getElementById('syncStatus');
+    if(statusEl) statusEl.textContent = '🔴 Could not reach the shared list — check your connection';
+  }
+}
+function watchSession(code){
+  stopWatching();
+  const es = new EventSource(`${DB_URL}/sessions/${encodeURIComponent(code)}.json`);
+  const handle = (evt) => {
+    try{
+      const payload = JSON.parse(evt.data);
+      if(payload && payload.path === '/' && payload.data){
+        const fresh = payload.data;
+        if(JSON.stringify(fresh.items||[]) !== JSON.stringify(state.items)){
+          state.items = fresh.items || [];
+          renderGearList();
+        }
+        if(fresh.workout) state.workout = fresh.workout;
+      }
+    }catch(err){ /* ignore malformed/partial stream chunks */ }
+  };
+  es.addEventListener('put', handle);
+  es.addEventListener('patch', handle);
+  es.onopen = () => { const s=document.getElementById('syncStatus'); if(s) s.textContent = '🟢 Live — updates from your crew appear automatically'; };
+  es.onerror = () => { const s=document.getElementById('syncStatus'); if(s) s.textContent = '🟡 Reconnecting...'; };
+  liveStream = es;
+}
+function stopWatching(){
+  if(liveStream){ liveStream.close(); liveStream = null; }
+}
+function enterLobby(){
+  document.getElementById('lobbyCode').textContent = state.code;
+  document.getElementById('lobbyModePill').textContent = state.mode==='kids' ? 'KIDS · 20 MIN' : 'GROUP · 45 MIN';
+  document.getElementById('nameFieldLabel').textContent = state.mode==='kids' ? "Kid's name" : 'Your name';
+  document.getElementById('itemFieldLabel').textContent = state.mode==='kids' ? 'What did you find?' : 'Equipment you brought';
+  renderGearList();
+  show('screen-lobby');
+}
+function renderGearList(){
+  const list = document.getElementById('gearList');
+  document.getElementById('gearCount').textContent = state.items.length ? `(${state.items.length})` : '';
+  if(!state.items.length){
+    list.innerHTML = `<div class="empty-state">No gear added yet. Be the first!</div>`;
+    return;
+  }
+  list.innerHTML = state.items.map(it => `
+    <div class="gear-tag">
+      <span>${escapeHtml(it.item)}</span>
+      <span class="by">${escapeHtml(it.by)}</span>
+    </div>
+  `).join('');
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function addItem(){
+  const nameEl = document.getElementById('contributorName');
+  const itemEl = document.getElementById('itemInput');
+  const by = nameEl.value.trim() || 'Camper';
+  const item = itemEl.value.trim();
+  if(!item){ alert('Add what the gear actually is first.'); return; }
+  state.items.push({ by, item });
+  renderGearList();
+  itemEl.value = '';
+  await saveSession();
+}
+
+/* ---------------- Workout generation ---------------- */
+function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function matchesWord(text, word){
+  // whole-word/phrase match so short synonyms like "bar" don't match inside "barbell"
+  const re = new RegExp('(^|[^a-z])' + escapeRegex(word) + '($|[^a-z])', 'i');
+  return re.test(' ' + text + ' ');
+}
+function buildWorkout(mode, items){
+  const db = EQUIP[mode];
+  const syn = SYNONYMS[mode];
+  // flatten to (type, phrase) pairs, longest/most-specific phrases checked first
+  const flat = [];
+  for(const [type, words] of Object.entries(syn)){
+    words.forEach(w => flat.push({type, word:w}));
+  }
+  flat.sort((a,b) => b.word.length - a.word.length);
+  const matched = new Set();
+  items.forEach(it=>{
+    let working = ' ' + it.item.toLowerCase() + ' ';
+    for(const {type, word} of flat){
+      const re = new RegExp('(^|[^a-z])(' + escapeRegex(word) + ')($|[^a-z])', 'i');
+      const m = working.match(re);
+      if(m){
+        matched.add(type);
+        // consume the matched phrase so a shorter/overlapping synonym can't match the same text again
+        working = working.replace(re, (full, b1, w, b2) => b1 + ' '.repeat(w.length) + b2);
+      }
+    }
+  });
+  let pool = [];
+  const seen = new Set();
+  matched.forEach(type=>{
+    db[type].exercises.forEach(ex=>{
+      if(!seen.has(ex)){ pool.push({ex, equip: db[type].name}); seen.add(ex); }
+    });
+  });
+  const bwPool = BODYWEIGHT[mode];
+  const maxPool = mode==='kids' ? 6 : 8;
+  if(pool.length > maxPool) pool = pool.slice(0, maxPool);
+
+  if(pool.length === 0){
+    // nothing matched at all — full bodyweight workout
+    const target = mode==='kids' ? 4 : 6;
+    let i = 0;
+    while(pool.length < target && i < bwPool.length){ pool.push({ex:bwPool[i], equip:'Bodyweight'}); i++; }
+  } else if(pool.length % 2 !== 0){
+    // odd one out — pair it with a single bodyweight move rather than leaving it solo
+    const bw = bwPool.find(ex => !seen.has(ex));
+    if(bw){ pool.push({ex: bw, equip:'Bodyweight'}); seen.add(bw); }
+  }
+
+  const supersets = [];
+  for(let i=0;i<pool.length;i+=2){
+    supersets.push(pool.slice(i, i+2));
+  }
+  const work = mode==='kids' ? 30 : 40;
+  const restEx = 15;
+  const restSet = mode==='kids' ? 45 : 60;
+  const totalMin = mode==='kids' ? 20 : 45;
+  const warmupMin = 5;
+  const cooldownMin = mode==='kids' ? 3 : 5;
+  const mainSec = (totalMin - warmupMin - cooldownMin) * 60;
+  let roundSec = 0;
+  supersets.forEach(s => { roundSec += s.length * (work + restEx); });
+  roundSec += supersets.length * restSet;
+  let rounds = Math.floor(mainSec / Math.max(roundSec,1));
+  rounds = Math.max(2, Math.min(6, rounds || 2));
+  const projectedSec = (warmupMin*60) + (roundSec * rounds) + (cooldownMin*60);
+
+  return {
+    mode, totalMin, warmupMin, cooldownMin, supersets, rounds, work, restEx, restSet,
+    warmupList: WARMUP[mode], cooldownList: COOLDOWN[mode], projectedSec,
+  };
+}
+async function generateWorkout(){
+  if(!state.items.length){
+    if(!confirm('No gear added yet — build a bodyweight-only workout instead?')) return;
+  }
+  const w = buildWorkout(state.mode, state.items);
+  state.workout = w;
+  await saveSession();
+  renderTicket(w);
+  document.getElementById('workoutModePill').textContent = state.mode==='kids' ? 'KIDS · 20 MIN' : 'GROUP · 45 MIN';
+  show('screen-workout');
+}
+function backToLobby(){
+  enterLobby();
+}
+function renderTicket(w){
+  const letters = ['A','B','C','D'];
+  let supersetsHtml = w.supersets.map((s, i)=>{
+    const rows = s.map((mv,j)=>`
+      <div class="move-row">
+        <span>${letters[j]}. ${escapeHtml(mv.ex)} <span class="move-time" style="opacity:.7;">(${escapeHtml(mv.equip)})</span></span>
+        <span class="move-time">${w.work}s</span>
+      </div>`).join('');
+    return `
+      <div class="superset-group">
+        <div class="superset-label">SUPERSET ${i+1}</div>
+        ${rows}
+      </div>`;
+  }).join('');
+
+  const warmupHtml = w.warmupList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}</span><span class="move-time">~1 min</span></div>`).join('');
+  const cooldownHtml = w.cooldownList.map(m=>`<div class="move-row"><span>${escapeHtml(m)}</span><span class="move-time">~1 min</span></div>`).join('');
+
+  const projMin = Math.floor(w.projectedSec / 60);
+  const projSec = w.projectedSec % 60;
+  const projLabel = projSec === 0 ? `${projMin} min` : `${projMin}m ${projSec}s`;
+
+  document.getElementById('ticketContainer').innerHTML = `
+    <div class="ticket-head">
+      <p class="ticket-title">Trail Ticket</p>
+      <p class="ticket-meta">SESSION ${state.code} &nbsp;·&nbsp; ${w.mode==='kids'?'KIDS CREW':'FULL CREW'}</p>
+      <p class="ticket-meta" style="margin-top:4px; color:var(--ember-dark); font-weight:700;">PROJECTED TIME: ${projLabel} <span style="color:#8a7f6a; font-weight:400;">(target ${w.totalMin} min)</span></p>
+    </div>
+    <div class="ticket-block">
+      <h4>Warm-Up · ${w.warmupMin} min</h4>
+      ${warmupHtml}
+    </div>
+    <div class="ticket-block">
+      <h4>Main Circuit</h4>
+      ${supersetsHtml}
+      <div class="rounds-note">${w.rounds} rounds &nbsp;·&nbsp; ${w.work}s work / ${w.restEx}s rest / ${w.restSet}s between supersets</div>
+    </div>
+    <div class="ticket-block">
+      <h4>Cooldown · ${w.cooldownMin} min</h4>
+      ${cooldownHtml}
+    </div>
+  `;
+}
+
+/* ---------------- Timer ---------------- */
+function buildSequence(w){
+  const out = [];
+  const warmEach = Math.round((w.warmupMin*60) / w.warmupList.length);
+  w.warmupList.forEach(m => out.push({phase:'WARM UP', move:m, seconds:warmEach}));
+  for(let r=0; r<w.rounds; r++){
+    w.supersets.forEach((s, si)=>{
+      s.forEach((mv, mi)=>{
+        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:mv.ex, seconds:w.work});
+        const isLastMoveOfSuperset = mi === s.length-1;
+        if(!isLastMoveOfSuperset){
+          out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest', seconds:w.restEx});
+        }
+      });
+      const isLastRoundAndSuperset = (r === w.rounds-1) && (si === w.supersets.length-1);
+      if(!isLastRoundAndSuperset){
+        out.push({phase:`ROUND ${r+1} OF ${w.rounds}`, move:'Rest — next superset', seconds:w.restSet});
+      }
+    });
+  }
+  const coolEach = Math.round((w.cooldownMin*60) / w.cooldownList.length);
+  w.cooldownList.forEach(m => out.push({phase:'COOLDOWN', move:m, seconds:coolEach}));
+  return out;
+}
+function startTimer(){
+  seq = buildSequence(state.workout);
+  seqIdx = 0;
+  paused = false;
+  document.getElementById('pauseBtn').textContent = 'Pause';
+  show('screen-timer');
+  loadStep();
+}
+function loadStep(){
+  if(seqIdx >= seq.length){ finishTimer(); return; }
+  const step = seq[seqIdx];
+  secondsLeft = step.seconds;
+  document.getElementById('timerPhase').textContent = step.phase;
+  document.getElementById('timerMove').textContent = step.move;
+  document.getElementById('timerRoundPill').textContent = state.code;
+  updateCountDisplay();
+  document.getElementById('timerProgress').textContent = `Step ${seqIdx+1} of ${seq.length}`;
+  if(tickHandle) clearInterval(tickHandle);
+  tickHandle = setInterval(tick, 1000);
+}
+function tick(){
+  if(paused) return;
+  secondsLeft--;
+  if(secondsLeft < 0){
+    seqIdx++;
+    loadStep();
+    return;
+  }
+  updateCountDisplay();
+}
+function updateCountDisplay(){
+  document.getElementById('timerCount').textContent = String(secondsLeft).padStart(2,'0');
+}
+function togglePause(){
+  paused = !paused;
+  document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+}
+function skipStep(){
+  seqIdx++;
+  loadStep();
+}
+function stopTimer(){
+  if(tickHandle) clearInterval(tickHandle);
+  show('screen-workout');
+}
+function finishTimer(){
+  if(tickHandle) clearInterval(tickHandle);
+  document.getElementById('timerPhase').textContent = 'DONE';
+  document.getElementById('timerMove').textContent = 'Nice work, back to camp 🔥';
+  document.getElementById('timerCount').textContent = '00';
+  document.getElementById('timerProgress').textContent = '';
+}
+</script>
+</body>
+</html>
